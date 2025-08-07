@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "jira-mcp": {
+      "command": "node",
+      "args": ["__SERVER_PATH__"],
+      "env": {
+        "JCLI_VENV_PATH": "__JCLI_VENV_PATH__",
+        "JCLI_WORKING_DIR": "__JCLI_WORKING_DIR__",
+        "JIRA_DEFAULT_PROJECT": "__JIRA_DEFAULT_PROJECT__"
+      }
+    }
+  }
+}

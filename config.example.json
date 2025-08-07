@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "jira-mcp": {
+      "command": "node",
+      "args": ["/absolute/path/to/jiracli-mcp/server.js"],
+      "env": {
+        "JCLI_VENV_PATH": "/absolute/path/to/jiracli/venv",
+        "JCLI_WORKING_DIR": "/absolute/path/to/jiracli",
+        "JIRA_DEFAULT_PROJECT": "YOUR_PROJECT_KEY"
+      }
+    }
+  }
+}
