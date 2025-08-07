@@ -34,6 +34,10 @@ bower_components
 # node_modules
 node_modules/
 
+# Lock files (for libraries/packages intended for distribution)
+package-lock.json
+yarn.lock
+
 # TypeScript v1 declaration files
 typings/
 
