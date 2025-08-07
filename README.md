@@ -33,7 +33,6 @@ This MCP server creates a powerful bridge between Claude and your JIRA instance,
    **Option B: Global Installation**
    - Install jcli globally accessible via PATH
    - Simpler setup, but affects system-wide Python packages
-   - Install with: `pip install jira-cli` or similar
 
 3. **Claude Desktop** or MCP-compatible client
 
