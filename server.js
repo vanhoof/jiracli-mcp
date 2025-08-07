@@ -13,6 +13,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { existsSync } from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -61,14 +62,13 @@ class JiraServer {
     }
 
     // Validate paths exist
-    const fs = require('fs');
-    if (!fs.existsSync(this.venvPath)) {
+    if (!existsSync(this.venvPath)) {
       console.error(`❌ JCLI virtual environment not found: ${this.venvPath}`);
       console.error('   Please verify JCLI_VENV_PATH points to a valid jiracli venv directory.');
       process.exit(1);
     }
 
-    if (!fs.existsSync(this.workingDir)) {
+    if (!existsSync(this.workingDir)) {
       console.error(`❌ JCLI working directory not found: ${this.workingDir}`);
       console.error('   Please verify JCLI_WORKING_DIR points to a valid jiracli directory.');
       process.exit(1);
