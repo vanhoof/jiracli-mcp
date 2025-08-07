@@ -88,51 +88,109 @@ create_config() {
         fi
     done
     
-    # Get jiracli directory
-    while [ -z "$JIRACLI_DIR" ] || [ ! -d "$JIRACLI_DIR" ]; do
-        read -p "Enter full path to your jiracli directory: " JIRACLI_DIR
-        if [ -z "$JIRACLI_DIR" ]; then
-            warning "jiracli directory path is required."
-        elif [ ! -d "$JIRACLI_DIR" ]; then
-            error "Directory not found: $JIRACLI_DIR"
-            echo "Please enter the full path to your existing jiracli installation."
-            JIRACLI_DIR=""
+    # Detect jiracli installation type
+    USE_GLOBAL_JCLI=false
+    
+    # Check if jcli is available globally
+    if command -v jcli > /dev/null 2>&1; then
+        echo ""
+        log "Global jcli installation detected!"
+        read -p "Use global jcli installation? (y/n) [y]: " use_global
+        if [[ -z "$use_global" || "$use_global" =~ ^[Yy]$ ]]; then
+            USE_GLOBAL_JCLI=true
+            log "Using global jcli installation"
+            
+            # Optional: Ask for working directory
+            read -p "Enter jiracli working directory (optional, press Enter to skip): " JIRACLI_DIR
+            if [ -n "$JIRACLI_DIR" ] && [ ! -d "$JIRACLI_DIR" ]; then
+                error "Directory not found: $JIRACLI_DIR"
+                exit 1
+            fi
         fi
-    done
-    
-    # Validate jiracli installation
-    if [ ! -f "$JIRACLI_DIR/venv/bin/activate" ]; then
-        error "jiracli virtual environment not found at $JIRACLI_DIR/venv"
-        echo "Please ensure you have a proper jiracli installation with virtual environment."
-        exit 1
     fi
     
-    # Test jiracli
-    if ! (cd "$JIRACLI_DIR" && source venv/bin/activate && command -v jcli > /dev/null); then
-        error "jcli command not found in virtual environment"
-        echo "Please ensure jiracli is properly installed and configured."
-        exit 1
+    if [ "$USE_GLOBAL_JCLI" = false ]; then
+        # Get jiracli directory for venv installation
+        while [ -z "$JIRACLI_DIR" ] || [ ! -d "$JIRACLI_DIR" ]; do
+            read -p "Enter full path to your jiracli directory: " JIRACLI_DIR
+            if [ -z "$JIRACLI_DIR" ]; then
+                warning "jiracli directory path is required for venv installation."
+            elif [ ! -d "$JIRACLI_DIR" ]; then
+                error "Directory not found: $JIRACLI_DIR"
+                echo "Please enter the full path to your existing jiracli installation."
+                JIRACLI_DIR=""
+            fi
+        done
+        
+        # Validate jiracli venv installation
+        if [ ! -f "$JIRACLI_DIR/venv/bin/activate" ]; then
+            error "jiracli virtual environment not found at $JIRACLI_DIR/venv"
+            echo "Please ensure you have a proper jiracli installation with virtual environment."
+            echo "Or use global installation if jcli is installed globally."
+            exit 1
+        fi
+        
+        # Test jiracli venv
+        if ! (cd "$JIRACLI_DIR" && source venv/bin/activate && command -v jcli > /dev/null); then
+            error "jcli command not found in virtual environment"
+            echo "Please ensure jiracli is properly installed and configured."
+            exit 1
+        fi
+        
+        success "Configuration validated: Project=$PROJECT_KEY, jiracli venv=$JIRACLI_DIR"
+    else
+        # Test global jcli
+        if ! jcli --version > /dev/null 2>&1; then
+            error "Global jcli installation not working properly"
+            echo "Please ensure jcli is properly configured."
+            exit 1
+        fi
+        
+        success "Configuration validated: Project=$PROJECT_KEY, global jcli${JIRACLI_DIR:+ with working dir=$JIRACLI_DIR}"
     fi
-    
-    success "Configuration validated: Project=$PROJECT_KEY, jiracli=$JIRACLI_DIR"
 
     # Create environment configuration
     cat > "$SCRIPT_DIR/.env" << EOF
 # jiracli-mcp Configuration
+JIRA_DEFAULT_PROJECT=$PROJECT_KEY
+JCLI_USE_GLOBAL=$USE_GLOBAL_JCLI
+EOF
+    
+    if [ "$USE_GLOBAL_JCLI" = true ]; then
+        if [ -n "$JIRACLI_DIR" ]; then
+            echo "JCLI_WORKING_DIR=$JIRACLI_DIR" >> "$SCRIPT_DIR/.env"
+        fi
+    else
+        cat >> "$SCRIPT_DIR/.env" << EOF
 JCLI_VENV_PATH=$JIRACLI_DIR/venv
 JCLI_WORKING_DIR=$JIRACLI_DIR
-JIRA_DEFAULT_PROJECT=$PROJECT_KEY
+EOF
+    fi
+    
+    cat >> "$SCRIPT_DIR/.env" << EOF
+
+# Optional settings
 MCP_SERVER_PORT=3000
 LOG_LEVEL=info
 EOF
 
     # Create MCP client configuration for Claude Desktop
     # Replace placeholders in template with actual values
-    sed -e "s|__SERVER_PATH__|$SCRIPT_DIR/server.js|g" \
-        -e "s|__JCLI_VENV_PATH__|$JIRACLI_DIR/venv|g" \
-        -e "s|__JCLI_WORKING_DIR__|$JIRACLI_DIR|g" \
-        -e "s|__JIRA_DEFAULT_PROJECT__|$PROJECT_KEY|g" \
-        "$SCRIPT_DIR/claude-desktop-config.json" > "$SCRIPT_DIR/claude-config.json"
+    if [ "$USE_GLOBAL_JCLI" = true ]; then
+        sed -e "s|__SERVER_PATH__|$SCRIPT_DIR/server.js|g" \
+            -e "s|__JIRA_DEFAULT_PROJECT__|$PROJECT_KEY|g" \
+            -e "s|__JCLI_USE_GLOBAL__|true|g" \
+            -e "s|__JCLI_VENV_PATH__|null|g" \
+            -e "s|__JCLI_WORKING_DIR__|${JIRACLI_DIR:-null}|g" \
+            "$SCRIPT_DIR/claude-desktop-config.json" > "$SCRIPT_DIR/claude-config.json"
+    else
+        sed -e "s|__SERVER_PATH__|$SCRIPT_DIR/server.js|g" \
+            -e "s|__JIRA_DEFAULT_PROJECT__|$PROJECT_KEY|g" \
+            -e "s|__JCLI_USE_GLOBAL__|false|g" \
+            -e "s|__JCLI_VENV_PATH__|$JIRACLI_DIR/venv|g" \
+            -e "s|__JCLI_WORKING_DIR__|$JIRACLI_DIR|g" \
+            "$SCRIPT_DIR/claude-desktop-config.json" > "$SCRIPT_DIR/claude-config.json"
+    fi
 
     # Create startup script
     cat > "$SCRIPT_DIR/start-server.sh" << 'EOF'
@@ -140,16 +198,21 @@ EOF
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Load environment variables
+# Load environment variables and export them for child processes
 if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a  # automatically export all variables
     source "$SCRIPT_DIR/.env"
+    set +a  # turn off automatic export
 fi
 
 # Start the MCP server
 cd "$SCRIPT_DIR"
 echo "Starting jiracli-mcp server..."
-echo "Working directory: $JCLI_WORKING_DIR"
-echo "Python venv: $JCLI_VENV_PATH"
+echo "Installation type: $([ "$JCLI_USE_GLOBAL" = "true" ] && echo "Global jcli" || echo "Virtual environment")"
+echo "Working directory: ${JCLI_WORKING_DIR:-"Current directory"}"
+if [ "$JCLI_USE_GLOBAL" != "true" ]; then
+    echo "Python venv: $JCLI_VENV_PATH"
+fi
 echo ""
 
 node server.js

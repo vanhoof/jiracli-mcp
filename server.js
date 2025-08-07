@@ -11,7 +11,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import { existsSync } from 'fs';
 
@@ -35,6 +35,7 @@ class JiraServer {
     this.venvPath = process.env.JCLI_VENV_PATH;
     this.workingDir = process.env.JCLI_WORKING_DIR;
     this.defaultProject = process.env.JIRA_DEFAULT_PROJECT;
+    this.useGlobalJcli = process.env.JCLI_USE_GLOBAL === 'true';
     
     // Validate required configuration
     this.validateConfiguration();
@@ -43,11 +44,18 @@ class JiraServer {
   }
 
   validateConfiguration() {
-    const requiredEnvVars = [
-      'JCLI_VENV_PATH',
-      'JCLI_WORKING_DIR', 
-      'JIRA_DEFAULT_PROJECT'
-    ];
+    const requiredEnvVars = ['JIRA_DEFAULT_PROJECT'];
+    
+    // Add conditional requirements based on installation type
+    if (this.useGlobalJcli) {
+      // For global installations, only working dir is optional
+      if (this.workingDir) {
+        requiredEnvVars.push('JCLI_WORKING_DIR');
+      }
+    } else {
+      // For venv installations, both are required
+      requiredEnvVars.push('JCLI_VENV_PATH', 'JCLI_WORKING_DIR');
+    }
 
     const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
     
@@ -57,32 +65,72 @@ class JiraServer {
         console.error(`   - ${envVar}`);
       });
       console.error('\n📖 Please configure these variables before starting the server.');
-      console.error('   See README.md or config.example.json for setup instructions.');
+      console.error('   See README.md for setup instructions.');
       process.exit(1);
     }
 
-    // Validate paths exist
-    if (!existsSync(this.venvPath)) {
-      console.error(`❌ JCLI virtual environment not found: ${this.venvPath}`);
-      console.error('   Please verify JCLI_VENV_PATH points to a valid jiracli venv directory.');
-      process.exit(1);
+    // Validate installation type and paths
+    if (this.useGlobalJcli) {
+      console.error('Using globally installed jcli');
+      
+      // Check if jcli is available globally
+      try {
+        execSync('which jcli', { stdio: 'pipe' });
+      } catch (error) {
+        console.error('Global jcli installation not found in PATH');
+        console.error('Please install jcli globally or use venv installation');
+        process.exit(1);
+      }
+      
+      // Validate working directory if specified
+      if (this.workingDir && !existsSync(this.workingDir)) {
+        console.error(`JCLI working directory not found: ${this.workingDir}`);
+        console.error('Please verify JCLI_WORKING_DIR points to a valid directory.');
+        process.exit(1);
+      }
+    } else {
+      console.error('Using virtual environment jcli');
+      
+      // Validate paths exist for venv installation
+      if (!existsSync(this.venvPath)) {
+        console.error(`JCLI virtual environment not found: ${this.venvPath}`);
+        console.error('Please verify JCLI_VENV_PATH points to a valid jiracli venv directory.');
+        console.error('Or set JCLI_USE_GLOBAL=true if using global installation.');
+        process.exit(1);
+      }
+
+      if (!existsSync(this.workingDir)) {
+        console.error(`JCLI working directory not found: ${this.workingDir}`);
+        console.error('Please verify JCLI_WORKING_DIR points to a valid jiracli directory.');
+        process.exit(1);
+      }
     }
 
-    if (!existsSync(this.workingDir)) {
-      console.error(`❌ JCLI working directory not found: ${this.workingDir}`);
-      console.error('   Please verify JCLI_WORKING_DIR points to a valid jiracli directory.');
-      process.exit(1);
+    console.error('Configuration validated successfully');
+    console.error(`Default Project: ${this.defaultProject}`);
+    console.error(`Installation Type: ${this.useGlobalJcli ? 'Global' : 'Virtual Environment'}`);
+    console.error(`JCLI Directory: ${this.workingDir || 'Current directory'}`);
+    if (!this.useGlobalJcli) {
+      console.error(`JCLI Venv: ${this.venvPath}`);
     }
-
-    console.log('✅ Configuration validated successfully');
-    console.log(`   Default Project: ${this.defaultProject}`);
-    console.log(`   JCLI Directory: ${this.workingDir}`);
-    console.log(`   JCLI Venv: ${this.venvPath}`);
   }
 
   async executeJCLI(command) {
     try {
-      const fullCommand = `cd "${this.workingDir}" && source "${this.venvPath}/bin/activate" && ${command}`;
+      let fullCommand;
+      
+      if (this.useGlobalJcli) {
+        // Use globally installed jcli
+        if (this.workingDir) {
+          fullCommand = `cd "${this.workingDir}" && ${command}`;
+        } else {
+          fullCommand = command;
+        }
+      } else {
+        // Use virtual environment jcli
+        fullCommand = `cd "${this.workingDir}" && source "${this.venvPath}/bin/activate" && ${command}`;
+      }
+      
       const { stdout, stderr } = await execAsync(fullCommand, { 
         shell: '/bin/bash',
         maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large outputs
