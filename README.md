@@ -23,16 +23,20 @@ This MCP server creates a powerful bridge between Claude and your JIRA instance,
 
 2. **jiracli installed and configured** with JIRA access and `.jira.yml` config
    
+   **Source**: [jiracli on GitHub](https://github.com/apconole/jiracli)
+   
    **Choose ONE of these installation methods:**
    
    **Option A: Virtual Environment Installation (Recommended)**
    - Install jiracli in a dedicated directory with Python virtual environment
    - More isolated, doesn't affect system Python packages
    - Example structure: `/path/to/jiracli/` with `venv/` subfolder
+   - Follow the [jiracli installation guide](https://github.com/apconole/jiracli#installation)
    
    **Option B: Global Installation**
    - Install jcli globally accessible via PATH
    - Simpler setup, but affects system-wide Python packages
+   - Follow the [jiracli installation guide](https://github.com/apconole/jiracli#installation)
 
 3. **Claude Desktop** or MCP-compatible client
 
@@ -51,7 +55,7 @@ cd jiracli-mcp
 - **✅ Validation**: Tests your jiracli installation before proceeding
 
 **You'll be prompted for:**
-- **Default JIRA project key** (e.g., NSTL, FDP, PROJ)
+- **Default JIRA project key** (e.g., EXAMPLE, FDP, PROJ)
 - **Installation type preference** (if both options are available)
 - **Directory paths** (for virtual environment setups)
 
@@ -82,7 +86,7 @@ The installer creates a `claude-config.json` file with your specific paths. Here
       "command": "node",
       "args": ["/absolute/path/to/jiracli-mcp/server.js"],
       "env": {
-        "JIRA_DEFAULT_PROJECT": "NSTL",
+        "JIRA_DEFAULT_PROJECT": "EXAMPLE",
         "JCLI_USE_GLOBAL": "false",
         "JCLI_VENV_PATH": "/absolute/path/to/jiracli/venv",
         "JCLI_WORKING_DIR": "/absolute/path/to/jiracli"
@@ -100,7 +104,7 @@ The installer creates a `claude-config.json` file with your specific paths. Here
       "command": "node",
       "args": ["/absolute/path/to/jiracli-mcp/server.js"],
       "env": {
-        "JIRA_DEFAULT_PROJECT": "NSTL",
+        "JIRA_DEFAULT_PROJECT": "EXAMPLE",
         "JCLI_USE_GLOBAL": "true",
         "JCLI_WORKING_DIR": "/optional/working/directory"
       }
@@ -131,7 +135,7 @@ The installer creates a `claude-config.json` file with your specific paths. Here
 - *"Show me sprint velocity and completion rates"*
 
 ### 📊 Multi-Project Analytics  
-- *"What are the latest NSTL issues?"*
+- *"What are the latest EXAMPLE issues?"*
 - *"Get the 10 most recent issues from PROJECT2"*
 - *"Search for authentication issues across all projects"*
 - *"Find experts for networking components in PROJ3"*
@@ -140,7 +144,7 @@ The installer creates a `claude-config.json` file with your specific paths. Here
 - *"Show me details for PROJ-456"*
 - *"Is ISSUE-123 a duplicate across projects?"*
 - *"Who are the experts for networking components?"*
-- *"Give me a comprehensive triage summary for NSTL-1510"*
+- *"Give me a comprehensive triage summary for EXAMPLE-1510"*
 
 ### 🎯 Cross-Project Queries
 - *"Search PROJECT3 for 'certificate' issues"*
@@ -183,7 +187,7 @@ The installer creates a `.env` file with your configuration. Here are examples:
 **Virtual Environment Installation:**
 ```bash
 # jiracli-mcp Configuration
-JIRA_DEFAULT_PROJECT=NSTL
+JIRA_DEFAULT_PROJECT=EXAMPLE
 JCLI_USE_GLOBAL=false
 JCLI_VENV_PATH=/Users/username/path/to/jiracli/venv
 JCLI_WORKING_DIR=/Users/username/path/to/jiracli
@@ -196,7 +200,7 @@ LOG_LEVEL=info
 **Global Installation:**
 ```bash
 # jiracli-mcp Configuration
-JIRA_DEFAULT_PROJECT=NSTL
+JIRA_DEFAULT_PROJECT=EXAMPLE
 JCLI_USE_GLOBAL=true
 JCLI_WORKING_DIR=/optional/working/directory
 
@@ -209,7 +213,7 @@ LOG_LEVEL=info
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `JIRA_DEFAULT_PROJECT` | ✅ | Your primary JIRA project key (e.g., NSTL, FDP) |
+| `JIRA_DEFAULT_PROJECT` | ✅ | Your primary JIRA project key (e.g., EXAMPLE, FDP) |
 | `JCLI_USE_GLOBAL` | ✅ | `true` for global jcli, `false` for virtual env |
 | `JCLI_VENV_PATH` | Virtual env only | Path to jiracli virtual environment |
 | `JCLI_WORKING_DIR` | Virtual env required, Global optional | jiracli working directory |
@@ -292,7 +296,7 @@ jcli projects list
 | **Path errors in config** | Use absolute paths (starting with `/`) in all configuration |
 | **jiracli commands fail** | Test jiracli manually first, ensure `.jira.yml` is configured |
 | **JIRA permission denied** | Verify project access with `jcli projects list` |
-| **Global jcli not found** | Install with `pip install jira-cli` or use virtual env setup |
+| **Global jcli not found** | Follow [jiracli installation guide](https://github.com/apconole/jiracli#installation) or use virtual env setup |
 | **Virtual env activation fails** | Ensure `venv/bin/activate` exists in your jiracli directory |
 | **JSON parsing errors in Claude** | Server outputs non-JSON to stdout - check server logs |
 
@@ -372,22 +376,14 @@ cd ~/jiracli
 python3 -m venv venv
 source venv/bin/activate
 
-# Install jiracli
-pip install jira-cli
-
-# Configure JIRA connection
-jcli configure
-# Follow prompts to set up your JIRA connection
+# Install and configure jiracli - follow the official guide:
+# https://github.com/apconole/jiracli#installation
 ```
 
 **Option B: Global Installation**
 ```bash
-# Install globally
-pip install jira-cli
-
-# Configure JIRA connection
-jcli configure
-# Follow prompts to set up your JIRA connection
+# Install and configure jiracli globally - follow the official guide:
+# https://github.com/apconole/jiracli#installation
 ```
 
 **3. Clone and Install jiracli-mcp**
