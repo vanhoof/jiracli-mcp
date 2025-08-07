@@ -47,15 +47,11 @@ class JiraServer {
     const requiredEnvVars = ['JIRA_DEFAULT_PROJECT'];
     
     // Add conditional requirements based on installation type
-    if (this.useGlobalJcli) {
-      // For global installations, only working dir is optional
-      if (this.workingDir) {
-        requiredEnvVars.push('JCLI_WORKING_DIR');
-      }
-    } else {
+    if (!this.useGlobalJcli) {
       // For venv installations, both are required
       requiredEnvVars.push('JCLI_VENV_PATH', 'JCLI_WORKING_DIR');
     }
+    // For global installations, no additional env vars are required
 
     const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
     
