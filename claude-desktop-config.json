@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "jira-mcp": {
+    "jiracli-mcp": {
       "command": "node",
       "args": ["__SERVER_PATH__"],
       "env": {

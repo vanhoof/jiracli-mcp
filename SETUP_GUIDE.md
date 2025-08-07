@@ -58,7 +58,7 @@ cd /path/to/your/jiracli-mcp
 ```json
 {
   "mcpServers": {
-    "jira-mcp": {
+    "jiracli-mcp": {
       "command": "node",
       "args": ["/absolute/path/to/jiracli-mcp/server.js"],
       "env": {
