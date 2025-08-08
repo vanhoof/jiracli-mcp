@@ -7,7 +7,7 @@
         "JIRA_DEFAULT_PROJECT": "YOUR_PROJECT_KEY",
         "JIRA_BOARDS": "Board One,Board Two,Development Board",
         "JCLI_USE_GLOBAL": "true",
-        "JCLI_WORKING_DIR": "/optional/jiracli/working/directory"
+        "JCLI_WORKING_DIR": "/path/to/jiracli/working/directory"
       }
     }
   }

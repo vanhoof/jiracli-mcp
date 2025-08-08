@@ -174,6 +174,9 @@ EOF
     if [ "$USE_GLOBAL_JCLI" = true ]; then
         if [ -n "$JIRACLI_DIR" ]; then
             echo "JCLI_WORKING_DIR=$JIRACLI_DIR" >> "$SCRIPT_DIR/.env"
+        else
+            # For global installs, default to current directory
+            echo "JCLI_WORKING_DIR=$(pwd)" >> "$SCRIPT_DIR/.env"
         fi
     else
         cat >> "$SCRIPT_DIR/.env" << EOF
@@ -199,7 +202,7 @@ EOF
             -e "s|__JIRA_DEFAULT_PROJECT__|$PROJECT_KEY|g" \
             -e "s|__JCLI_USE_GLOBAL__|true|g" \
             -e "s|__JCLI_VENV_PATH__|null|g" \
-            -e "s|__JCLI_WORKING_DIR__|${JIRACLI_DIR:-null}|g" \
+            -e "s|__JCLI_WORKING_DIR__|${JIRACLI_DIR:-$(pwd)}|g" \
             -e "s|__JIRA_BOARDS__|$ESCAPED_BOARD_NAMES|g" \
             "$SCRIPT_DIR/claude-desktop-config.json" > "$SCRIPT_DIR/claude-config.json"
     else

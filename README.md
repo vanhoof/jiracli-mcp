@@ -109,7 +109,7 @@ The installer creates a `claude-config.json` file with your specific paths. Here
         "JIRA_DEFAULT_PROJECT": "EXAMPLE",
         "JIRA_BOARDS": "Board One,Board Two,Development Board",
         "JCLI_USE_GLOBAL": "true",
-        "JCLI_WORKING_DIR": "/optional/working/directory"
+        "JCLI_WORKING_DIR": "/path/to/jiracli/working/directory"
       }
     }
   }
@@ -211,7 +211,7 @@ LOG_LEVEL=info
 JIRA_DEFAULT_PROJECT=EXAMPLE
 JIRA_BOARDS=Board One,Board Two,Development Board
 JCLI_USE_GLOBAL=true
-JCLI_WORKING_DIR=/optional/working/directory
+JCLI_WORKING_DIR=/path/to/jiracli/working/directory
 
 # Optional settings
 MCP_SERVER_PORT=3000
@@ -226,7 +226,7 @@ LOG_LEVEL=info
 | `JIRA_BOARDS` | ❌ | Comma-separated list of board names for sprint tracking |
 | `JCLI_USE_GLOBAL` | ✅ | `true` for global jcli, `false` for virtual env |
 | `JCLI_VENV_PATH` | Virtual env only | Path to jiracli virtual environment |
-| `JCLI_WORKING_DIR` | Virtual env required, Global optional | jiracli working directory |
+| `JCLI_WORKING_DIR` | ✅ | jiracli working directory |
 | `MCP_SERVER_PORT` | ❌ | Server port (default: 3000) |
 | `LOG_LEVEL` | ❌ | Logging level (default: info) |
 
