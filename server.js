@@ -794,12 +794,8 @@ class JiraServer {
         actualBoardName = this.configuredBoards[0];
         console.error(`No board specified, using configured board: ${actualBoardName}`);
       } else if (boardName) {
-        // Try to find better match from configured boards
-        const suggestedBoard = this.suggestBoardFromConfigured(boardName);
-        if (suggestedBoard && suggestedBoard !== boardName) {
-          console.error(`Board suggestion: Using '${suggestedBoard}' instead of '${boardName}'`);
-          actualBoardName = suggestedBoard;
-        }
+        // Use the provided board name directly - don't force suggestions from configured boards
+        actualBoardName = boardName;
       }
       
       if (!actualBoardName) {
@@ -875,12 +871,8 @@ class JiraServer {
         actualBoardName = this.configuredBoards[0];
         console.error(`No board specified, using configured board: ${actualBoardName}`);
       } else if (boardName) {
-        // Try to find better match from configured boards
-        const suggestedBoard = this.suggestBoardFromConfigured(boardName);
-        if (suggestedBoard && suggestedBoard !== boardName) {
-          console.error(`Board suggestion: Using '${suggestedBoard}' instead of '${boardName}'`);
-          actualBoardName = suggestedBoard;
-        }
+        // Use the provided board name directly - don't force suggestions from configured boards
+        actualBoardName = boardName;
       }
       
       if (!actualBoardName) {
