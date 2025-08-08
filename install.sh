@@ -88,6 +88,14 @@ create_config() {
         fi
     done
     
+    # Get JIRA boards (optional)
+    echo ""
+    log "Board Configuration (Optional)"
+    echo "Configure boards for easy sprint access. You can add multiple boards separated by commas."
+    echo "Example: 'Sprint Board,Development Board,Team Scrum Board'"
+    echo ""
+    read -p "Enter board names (optional, press Enter to skip): " BOARD_NAMES
+    
     # Detect jiracli installation type
     USE_GLOBAL_JCLI=false
     
@@ -156,6 +164,13 @@ JIRA_DEFAULT_PROJECT=$PROJECT_KEY
 JCLI_USE_GLOBAL=$USE_GLOBAL_JCLI
 EOF
     
+    # Add board configuration if provided
+    if [ -n "$BOARD_NAMES" ]; then
+        echo "" >> "$SCRIPT_DIR/.env"
+        echo "# Board Configuration (comma-separated list)" >> "$SCRIPT_DIR/.env"
+        echo "JIRA_BOARDS=\"$BOARD_NAMES\"" >> "$SCRIPT_DIR/.env"
+    fi
+    
     if [ "$USE_GLOBAL_JCLI" = true ]; then
         if [ -n "$JIRACLI_DIR" ]; then
             echo "JCLI_WORKING_DIR=$JIRACLI_DIR" >> "$SCRIPT_DIR/.env"
@@ -176,12 +191,16 @@ EOF
 
     # Create MCP client configuration for Claude Desktop
     # Replace placeholders in template with actual values
+    # Escape any quotes in board names for JSON
+    ESCAPED_BOARD_NAMES=$(echo "${BOARD_NAMES:-}" | sed 's/"/\\"/g')
+    
     if [ "$USE_GLOBAL_JCLI" = true ]; then
         sed -e "s|__SERVER_PATH__|$SCRIPT_DIR/server.js|g" \
             -e "s|__JIRA_DEFAULT_PROJECT__|$PROJECT_KEY|g" \
             -e "s|__JCLI_USE_GLOBAL__|true|g" \
             -e "s|__JCLI_VENV_PATH__|null|g" \
             -e "s|__JCLI_WORKING_DIR__|${JIRACLI_DIR:-null}|g" \
+            -e "s|__JIRA_BOARDS__|$ESCAPED_BOARD_NAMES|g" \
             "$SCRIPT_DIR/claude-desktop-config.json" > "$SCRIPT_DIR/claude-config.json"
     else
         sed -e "s|__SERVER_PATH__|$SCRIPT_DIR/server.js|g" \
@@ -189,6 +208,7 @@ EOF
             -e "s|__JCLI_USE_GLOBAL__|false|g" \
             -e "s|__JCLI_VENV_PATH__|$JIRACLI_DIR/venv|g" \
             -e "s|__JCLI_WORKING_DIR__|$JIRACLI_DIR|g" \
+            -e "s|__JIRA_BOARDS__|$ESCAPED_BOARD_NAMES|g" \
             "$SCRIPT_DIR/claude-desktop-config.json" > "$SCRIPT_DIR/claude-config.json"
     fi
 
