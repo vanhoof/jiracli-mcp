@@ -5,6 +5,7 @@
       "args": ["/absolute/path/to/jiracli-mcp/server.js"],
       "env": {
         "JIRA_DEFAULT_PROJECT": "YOUR_PROJECT_KEY",
+        "JIRA_BOARDS": "Board One,Board Two,Development Board",
         "JCLI_USE_GLOBAL": "true",
         "JCLI_WORKING_DIR": "/optional/jiracli/working/directory"
       }
