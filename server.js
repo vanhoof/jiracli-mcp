@@ -722,37 +722,27 @@ class JiraServer {
 
   async validateConfiguredBoards() {
     try {
-      // Get list of all available boards for validation
-      const command = 'jcli boards list --limit 100';
-      const output = await this.executeJCLI(command);
-      
-      // Parse available boards
-      const lines = output.trim().split('\n');
-      const availableBoards = [];
-      
-      for (let i = 2; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line && !line.startsWith('+') && !line.startsWith('|')) {
-          const parts = line.split('|').map(p => p.trim()).filter(p => p);
-          if (parts.length >= 1) {
-            availableBoards.push(parts[0]);
+      // Validate each configured board by attempting to show it directly
+      const validation = await Promise.all(
+        this.configuredBoards.map(async (configBoard) => {
+          try {
+            const command = `jcli boards show "${configBoard}"`;
+            await this.executeJCLI(command);
+            return {
+              board_name: configBoard,
+              exists: true,
+              suggestion: null
+            };
+          } catch (error) {
+            return {
+              board_name: configBoard,
+              exists: false,
+              suggestion: `Board "${configBoard}" not found. Use list_boards to see available boards.`,
+              error: error.message
+            };
           }
-        }
-      }
-      
-      // Check which configured boards actually exist
-      const validation = this.configuredBoards.map(configBoard => {
-        const exists = availableBoards.some(availBoard => 
-          availBoard.toLowerCase().includes(configBoard.toLowerCase()) ||
-          configBoard.toLowerCase().includes(availBoard.toLowerCase())
-        );
-        
-        return {
-          board_name: configBoard,
-          exists: exists,
-          suggestion: exists ? null : `Board not found - check spelling or use list_boards to see available boards`
-        };
-      });
+        })
+      );
       
       return {
         total_configured: this.configuredBoards.length,
