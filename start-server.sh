@@ -7,6 +7,13 @@ if [ -f "$SCRIPT_DIR/.env" ]; then
     set -a  # automatically export all variables
     source "$SCRIPT_DIR/.env"
     set +a  # turn off automatic export
+
+    # Explicitly export key variables for Node.js
+    export JIRA_DEFAULT_PROJECT
+    export JCLI_USE_GLOBAL
+    export JCLI_VENV_PATH
+    export JCLI_WORKING_DIR
+    export JIRA_BOARDS
 fi
 
 # Start the MCP server
