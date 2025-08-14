@@ -38,7 +38,9 @@ This MCP server creates a powerful bridge between Claude and your JIRA instance,
    - Simpler setup, but affects system-wide Python packages
    - Follow the [jiracli installation guide](https://github.com/apconole/jiracli#installation)
 
-3. **Claude Desktop** or MCP-compatible client
+3. **Claude Desktop** or **Claude CLI with MCP support**
+   - **Claude Desktop**: Standard GUI application
+   - **Claude CLI**: Use with `--mcp-config` flag pointing to your configuration file
 
 ### Installation Steps
 
@@ -68,12 +70,24 @@ cd jiracli-mcp
 ```
 **⚠️ Important**: Keep this terminal open - the server needs to stay running.
 
-#### 3. Configure Claude Desktop
+#### 3. Configure Claude Integration
 
+Choose one of these methods:
+
+**Option A: Claude Desktop**
 1. **Copy the contents** of the generated `claude-config.json`
 2. **Paste into Claude Desktop MCP settings:**
    - **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 3. **Restart Claude Desktop** completely
+
+**Option B: Claude CLI**
+```bash
+# Use the generated configuration directly with Claude CLI
+claude --mcp-config ./claude-config.json "What boards are available?"
+
+# Or specify an absolute path
+claude --mcp-config /path/to/your/jiracli-mcp/claude-config.json "Show me sprint insights"
+```
 
 **Generated Configuration Examples:**
 
@@ -118,15 +132,20 @@ The installer creates a `claude-config.json` file with your specific paths. Here
 
 #### 4. Test the Integration
 
-**Sprint Features Test:**
-- *"What boards are available?"*
-- *"Show me sprints for [board name]"*
-- *"Give me insights on the active sprint"*
+**Using Claude Desktop:**
+- Open Claude Desktop and ask your questions directly
 
-**Multi-Project Test:**
-- *"What are the latest issues from [your default project]?"*
-- *"Get 5 recent issues from [another project]"*
-- *"Search for 'bug' across all my projects"*
+**Using Claude CLI:**
+```bash
+# Test sprint features
+claude --mcp-config ./claude-config.json "What boards are available?"
+claude --mcp-config ./claude-config.json "Show me sprints for Development Board"
+claude --mcp-config ./claude-config.json "Give me insights on the active sprint"
+
+# Test multi-project features
+claude --mcp-config ./claude-config.json "What are the latest issues from MY-PROJECT?"
+claude --mcp-config ./claude-config.json "Search for 'bug' across all my projects"
+```
 
 ## 🗣️ Example Questions
 
@@ -428,10 +447,9 @@ cd jiracli-mcp
 - Choose installation type (auto-detected)
 - Verify paths and configuration
 
-**5. Configure Claude Desktop**
-- Copy contents of generated `claude-config.json`
-- Add to your Claude Desktop MCP settings
-- Restart Claude Desktop
+**5. Configure Claude Integration**
+- **For Claude Desktop**: Copy contents of generated `claude-config.json` to MCP settings, restart Claude Desktop
+- **For Claude CLI**: Use `claude --mcp-config ./claude-config.json "your question"` directly
 
 **Note**: The installer validates everything and provides specific error messages if something isn't working.
 
